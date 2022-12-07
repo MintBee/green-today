@@ -2,27 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:green_today/business/calendar_event_control.dart';
 import 'package:green_today/domain/event.dart';
 import 'package:provider/provider.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import '../domain/time.dart';
 
-class EventAddDialog extends StatefulWidget {
+class EventEditDialog extends StatefulWidget {
   DateTime? startTime;
   DateTime? endTime;
+  final CalendarTapDetails tapDetails;
 
-  final bool update;
-
-  EventAddDialog({super.key, this.update = false, this.startTime, this.endTime});
+  EventEditDialog({super.key, this.startTime, this
+      .endTime, required this.tapDetails});
 
   @override
-  State<EventAddDialog> createState() => _EventAddDialogState();
+  State<EventEditDialog> createState() => _EventEditDialogState();
 }
 
-class _EventAddDialogState extends State<EventAddDialog> {
+class _EventEditDialogState extends State<EventEditDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late SimpleTime startTime = SimpleTime(0, 0);
   late SimpleTime endTime = SimpleTime(0, 0);
+  late Event targetEvent;
   String? todo;
   int achievementRate = 0;
+
 
   @override
   void initState() {
@@ -38,6 +41,8 @@ class _EventAddDialogState extends State<EventAddDialog> {
     } else {
       endTime = SimpleTime(0, 0);
     }
+
+    targetEvent = widget.tapDetails.appointments![0];
   }
 
   @override
@@ -49,6 +54,14 @@ class _EventAddDialogState extends State<EventAddDialog> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Padding(padding: const EdgeInsets.all(10), child: ElevatedButton(
+                onPressed: () {
+                  Provider.of<EventController>(context, listen: false).removeEvent(targetEvent);
+                  Navigator.pop(context);
+                }, child: Text("Remove event"),
+            )
+              ,),
+            SizedBox(height: 10,),
             Container(
               margin: const EdgeInsets.all(10),
               child: Row(
@@ -200,14 +213,14 @@ class _EventAddDialogState extends State<EventAddDialog> {
                   final newEndTime = DateTime(now.year, now.month, now.day,
                       endTime.hour!, endTime.minute!);
                   final newEvent = Event(
-                    startTime: newStartTime,
-                    endTime: newEndTime,
-                    subject: todo ?? '',
-                    achievementRate: achievementRate
+                      startTime: newStartTime,
+                      endTime: newEndTime,
+                      subject: todo ?? '',
+                      achievementRate: achievementRate
                   );
                   final eventController = Provider.of<EventController>
                     (context, listen: false);
-                    eventController.addEvent(newEvent);
+                  eventController.updateEvent(targetEvent, newEvent);
                   Navigator.pop(context);
                 },
                 // 버튼에 텍스트 부여

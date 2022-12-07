@@ -4,6 +4,8 @@ import 'package:green_today/business/calendar_event_control.dart';
 import 'package:green_today/domain/EventDataSource.dart';
 import 'package:green_today/firebase_options.dart';
 import 'package:green_today/palette.dart';
+import 'package:green_today/repo/DayReviewRepository.dart';
+import 'package:green_today/repo/SettingRepository.dart';
 import 'package:green_today/screens/month.dart';
 import 'package:green_today/screens/today.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +23,9 @@ void main() async {
             // TODO eventController.loadMonthEvents(DateTime.now());
             return eventController;
           },
-          update: (context, value, EventController? previous) => previous!)
+          update: (context, value, EventController? previous) => previous!),
+      Provider(create: (_) => DayReviewRepository()),
+      Provider(create: (_) => SettingsRepository())
     ],
     child: const MyApp(),
   ));

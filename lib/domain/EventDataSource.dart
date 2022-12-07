@@ -19,13 +19,6 @@ class EventDataSource<Event> extends CalendarDataSource<Event> {
   }
 
   @override
-  Color getColor(int index) {
-    int roundedRate =
-        (appointments![index].achievementRate.toDouble() / 10).round();
-    return GreenPicker.getGreenFor(roundedRate);
-  }
-
-  @override
   String getSubject(int index) {
     return appointments![index].subject;
   }

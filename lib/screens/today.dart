@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:green_today/business/calendar_event_control.dart';
-import 'package:green_today/domain/EventDataSource.dart';
 import 'package:green_today/domain/event.dart';
 import 'package:green_today/palette.dart';
 import 'package:green_today/repo/EventRepository.dart';
@@ -9,6 +8,10 @@ import 'package:green_today/screens/setting.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:time/time.dart';
+
+import 'package:collection/collection.dart';
+
+import 'edit_event_dialog.dart';
 
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
@@ -25,31 +28,55 @@ class _TodayScreenState extends State<TodayScreen> {
           children: [
             const TodayHeader(),
             Expanded(child: Consumer<EventController>(
-              builder: (BuildContext context, eventController,
-                  Widget?
-                  child) {
+              builder: (BuildContext context, eventController, Widget? child) {
                 return SfCalendar(
+                  allowAppointmentResize: true,
+                  allowDragAndDrop: false,
                   dataSource: eventController.dataSource,
+                  appointmentTextStyle: TextStyle(
+                      fontSize: 20,
+                      color: Color(0xffaaaaaa),
+                      letterSpacing: 5,
+                      fontWeight: FontWeight.bold),
+                  onAppointmentResizeStart: (details) {
+                    final Event event = details.appointment;
+                    eventController.removeEvent(event);
+                  },
+                  onAppointmentResizeEnd: (details) {
+                    final Appointment appointment = details.appointment;
+                    final Event event = Event.fromAppointment(appointment);
+                    eventController.removeAppointment(appointment);
+                    eventController.addEvent(event);
+                  },
+                  onTap: (calendarTapDetails) {
+                    final Event tappedEvent =
+                        calendarTapDetails.appointments!.firstOrNull;
+                    showDialog(
+                      context: context,
+                      builder: (context) => EventEditDialog(
+                        startTime: tappedEvent.startTime,
+                        endTime: tappedEvent.endTime,
+                        tapDetails: calendarTapDetails,
+                      ),
+                    );
+                  },
                   onLongPress: (calendarLongPressDetails) {
                     final startTime = calendarLongPressDetails.date!;
                     final endTime = startTime + 1.hours;
-                    final newEvent = Event(startTime: startTime, endTime:
-                    endTime, subject: "Hello");
-                    newEvent.color = GreenPicker.p30.color;
 
-                    eventController.addEvent(newEvent);
-
-                    showDialog(context: context, builder: (context) => AddEventDialog());
+                    showDialog(
+                        context: context,
+                        builder: (context) => EventAddDialog(
+                              startTime: startTime,
+                              endTime: endTime,
+                            ));
                   },
                 );
-              },))
+              },
+            ))
           ],
         ),
         floatingActionButton: EventAddButton());
-  }
-
-  void _onCalendarLongPress(CalendarLongPressDetails longPressDetails) {
-    final capturedDate = longPressDetails.date;
   }
 }
 
@@ -62,9 +89,11 @@ class EventAddButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        showDialog(context: context, builder: (context) {
-          return const SettingDialog();
-        });
+        showDialog(
+            context: context,
+            builder: (context) {
+              return EventAddDialog();
+            });
       },
       style: ElevatedButton.styleFrom(
         shape: const CircleBorder(),
@@ -87,7 +116,8 @@ class TodayHeader extends StatelessWidget {
           width: 36,
           child: IconButton(
               onPressed: () {
-                showDialog(context: context,
+                showDialog(
+                    context: context,
                     builder: (context) => const SettingDialog());
               },
               icon: const Icon(Icons.settings)),

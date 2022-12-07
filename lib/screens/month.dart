@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:green_today/business/calendar_event_control.dart';
+import 'package:green_today/repo/DayReviewRepository.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
@@ -19,6 +20,11 @@ class _MonthScreenState extends State<MonthScreen> {
               return SfCalendar(
                 dataSource: eventController.dataSource,
                 view: CalendarView.month,
+                appointmentTextStyle: TextStyle(
+                    fontSize: 20,
+                    color: Color(0xffaaaaaa),
+                    letterSpacing: 5,
+                    fontWeight: FontWeight.bold),
                 onTap: (calendarTapDetails) {
                   Navigator.push(
                       context,
@@ -27,12 +33,18 @@ class _MonthScreenState extends State<MonthScreen> {
                                 value: eventController,
                                 builder: (context, child) {
                                   return SfCalendar(
-                                      dataSource: Provider.of<EventController>(
-                                              context,
-                                              listen: false)
-                                          .dataSource,
-                                      view: CalendarView.day,
-                                  headerHeight: 0,);
+                                    dataSource: Provider.of<EventController>(
+                                            context,
+                                            listen: false)
+                                        .dataSource,
+                                    appointmentTextStyle: TextStyle(
+                                        fontSize: 20,
+                                        color: Color(0xffaaaaaa),
+                                        letterSpacing: 5,
+                                        fontWeight: FontWeight.bold),
+                                    view: CalendarView.day,
+                                    headerHeight: 0,
+                                  );
                                 },
                               )));
                 },
@@ -51,11 +63,16 @@ class DayReview extends StatefulWidget {
 
 class _DayReviewState extends State<DayReview> {
   final _todayReviewEditingController = TextEditingController();
+  late final DayReviewRepository _reviewRepository;
 
   @override
   void initState() {
     super.initState();
-    // TODO fetch today's review to controller
+    _reviewRepository =
+        Provider.of<DayReviewRepository>(context, listen: false);
+    _reviewRepository
+        .get(DateTime.now())
+        .then((value) => _todayReviewEditingController.text = value ?? '');
   }
 
   @override
@@ -84,8 +101,11 @@ class _DayReviewState extends State<DayReview> {
                           controller: _todayReviewEditingController,
                           maxLines: 4,
                           decoration: InputDecoration(hintText: '오늘 하루는 어땠나요?'),
-
-                          //TODO onSubmitted: ,
+                          onSubmitted: (String? value) {
+                            final text = value ?? '';
+                            _todayReviewEditingController.text = text;
+                            _reviewRepository.update(DateTime.now(), text);
+                          },
                         )),
                   ),
                   SizedBox(

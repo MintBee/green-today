@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:green_today/domain/time.dart';
 
 class SettingDialog extends StatefulWidget {
   const SettingDialog({Key? key}) : super(key: key);
@@ -13,7 +14,10 @@ class SettingDialog extends StatefulWidget {
 class _SettingDialogState extends State<SettingDialog> {
   Future<UserCredential> signInWithGoogle() async {
     // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    final googleSinIn = GoogleSignIn(
+      clientId: '436085979280-t9n5r1u2vdg2nf3adnmbecuk5kp98tv'
+    );
+    final GoogleSignInAccount? googleUser = await googleSinIn.signIn();
 
     // Obtain the auth details from the request
     final GoogleSignInAuthentication? googleAuth =
@@ -28,8 +32,8 @@ class _SettingDialogState extends State<SettingDialog> {
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
-  PlanningTime planningTime = PlanningTime(0, 0);
-  DiaryTime diaryTime = DiaryTime(0, 0);
+  SimpleTime planningTime = SimpleTime(0, 0);
+  SimpleTime diaryTime = SimpleTime(0, 0);
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +113,7 @@ class _SettingDialogState extends State<SettingDialog> {
                     onChanged: (int? value) {
                       setState(() {
                         planningTime.hour = value!;
+
                       });
                     },
                   ),
@@ -146,7 +151,7 @@ class _SettingDialogState extends State<SettingDialog> {
                 ),
                 Expanded(
                   child: DropdownButtonFormField(
-                    value: planningTime.hour,
+                    value: diaryTime.hour,
                     items: List.generate(24, (i) {
                       if (i < 10) {
                         return DropdownMenuItem(value: i, child: Text('0$i'));
@@ -155,7 +160,7 @@ class _SettingDialogState extends State<SettingDialog> {
                     }),
                     onChanged: (int? value) {
                       setState(() {
-                        planningTime.hour = value!;
+                        diaryTime.hour = value!;
                       });
                     },
                   ),
@@ -166,7 +171,7 @@ class _SettingDialogState extends State<SettingDialog> {
                 ),
                 Expanded(
                   child: DropdownButtonFormField(
-                    value: planningTime.minute,
+                    value: diaryTime.minute,
                     items: List.generate(60, (i) {
                       if (i < 10) {
                         return DropdownMenuItem(value: i, child: Text('0$i'));
@@ -175,7 +180,7 @@ class _SettingDialogState extends State<SettingDialog> {
                     }),
                     onChanged: (int? value) {
                       setState(() {
-                        planningTime.minute = value!;
+                        diaryTime.minute = value!;
                       });
                     },
                   ),
@@ -186,39 +191,5 @@ class _SettingDialogState extends State<SettingDialog> {
         ],
       ),
     );
-  }
-}
-
-class PlanningTime {
-  int hour;
-  int minute;
-
-  PlanningTime(
-    this.hour,
-    this.minute,
-  );
-
-  @override
-  String toString() {
-    return '('
-        '$hour : '
-        '$minute)';
-  }
-}
-
-class DiaryTime {
-  int hour;
-  int minute;
-
-  DiaryTime(
-    this.hour,
-    this.minute,
-  );
-
-  @override
-  String toString() {
-    return '('
-        '$hour : '
-        '$minute)';
   }
 }
