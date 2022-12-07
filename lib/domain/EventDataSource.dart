@@ -10,35 +10,35 @@ class EventDataSource<Event> extends CalendarDataSource<Event> {
 
   @override
   DateTime getStartTime(int index) {
-    return appointments![index].from;
+    return appointments![index].startTime;
   }
 
   @override
   DateTime getEndTime(int index) {
-    return appointments![index].to;
+    return appointments![index].endTime;
   }
 
   @override
   Color getColor(int index) {
-    int roundedRate = (appointments![index].toDouble() / 10).round();
+    int roundedRate =
+        (appointments![index].achievementRate.toDouble() / 10).round();
     return GreenPicker.getGreenFor(roundedRate);
   }
 
   @override
   String getSubject(int index) {
-    return appointments![index].title;
+    return appointments![index].subject;
   }
-}
 
-class Event {
-  Event(
-      {required this.from,
-      required this.to,
-      this.title = '',
-      this.achievementRate = 0});
+  int getAchievementRate(int index) {
+    return appointments![index].achievementRate;
+  }
 
-  DateTime from;
-  DateTime to;
-  String title;
-  int achievementRate;
+  int getAvgAchievementRate() {
+    return appointments!.fold(
+            0,
+            (previousValue, element) =>
+                (previousValue + element.achievementRate) as int) ~/
+        appointments!.length;
+  }
 }

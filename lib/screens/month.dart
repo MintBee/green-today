@@ -1,9 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:green_today/business/calendar_event_control.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-
-import '../domain/EventDataSource.dart';
 
 class MonthScreen extends StatefulWidget {
   @override
@@ -16,9 +14,29 @@ class _MonthScreenState extends State<MonthScreen> {
     return Column(children: [
       Expanded(
           flex: 3,
-          child: Consumer<EventDataSource>(
-            builder: (BuildContext context, value, Widget? child) {
-              return SfCalendar(dataSource: value, view: CalendarView.month);
+          child: Consumer<EventController>(
+            builder: (BuildContext context, eventController, Widget? child) {
+              return SfCalendar(
+                dataSource: eventController.dataSource,
+                view: CalendarView.month,
+                onTap: (calendarTapDetails) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Provider.value(
+                                value: eventController,
+                                builder: (context, child) {
+                                  return SfCalendar(
+                                      dataSource: Provider.of<EventController>(
+                                              context,
+                                              listen: false)
+                                          .dataSource,
+                                      view: CalendarView.day,
+                                  headerHeight: 0,);
+                                },
+                              )));
+                },
+              );
             },
           )),
       Expanded(flex: 2, child: DayReview())
@@ -32,7 +50,13 @@ class DayReview extends StatefulWidget {
 }
 
 class _DayReviewState extends State<DayReview> {
-  final _textEditingController = TextEditingController();
+  final _todayReviewEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // TODO fetch today's review to controller
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,22 +67,32 @@ class _DayReviewState extends State<DayReview> {
             Expanded(flex: 7, child: Container()),
             Expanded(
               flex: 86,
-              child: Container(
-                height: 200,
-                decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 1.5,
-                      color: Colors.grey,
-                    ),
-                    borderRadius: const BorderRadius.all(Radius.circular(20))),
-                child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextFormField(
-                      //TODO 여기에 세이브 버튼 넣어서 TextFormField 세이브
-                      controller: _textEditingController,
-                      maxLines: 4,
-                      decoration: InputDecoration(hintText: '오늘 하루는 어땠나요?'),
-                    )),
+              child: Column(
+                children: [
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 1.5,
+                          color: Colors.grey,
+                        ),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20))),
+                    child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          controller: _todayReviewEditingController,
+                          maxLines: 4,
+                          decoration: InputDecoration(hintText: '오늘 하루는 어땠나요?'),
+
+                          //TODO onSubmitted: ,
+                        )),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text("")
+                ],
               ),
             ),
             Expanded(flex: 7, child: Container())

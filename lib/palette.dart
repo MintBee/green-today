@@ -12,7 +12,8 @@ enum GreenPicker {
   p80(Color(0xff00b10f)),
   p90(Color(0xff00960d)),
   p100(Color(0xff00960d)),
-  chipTab(Color(0xffafe1ba));
+  chipTab(Color(0xffafe1ba)),
+  background(Color(0xffedffed));
 
   const GreenPicker(this.color);
   final Color color;

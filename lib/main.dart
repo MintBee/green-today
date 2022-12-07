@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:green_today/business/calendar_event_control.dart';
 import 'package:green_today/domain/EventDataSource.dart';
 import 'package:green_today/firebase_options.dart';
 import 'package:green_today/palette.dart';
@@ -10,9 +11,20 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(MultiProvider(providers: [
-    Provider(create: (_) => EventDataSource([]))
-  ], child: const MyApp(),));
+  runApp(MultiProvider(
+    providers: [
+      Provider(create: (_) => EventDataSource([])),
+      ProxyProvider<EventDataSource, EventController>(
+          create: (context) {
+            final eventController = EventController(
+                Provider.of<EventDataSource>(context, listen: false));
+            // TODO eventController.loadMonthEvents(DateTime.now());
+            return eventController;
+          },
+          update: (context, value, EventController? previous) => previous!)
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -22,14 +34,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-          title: 'Flutter Demo',
-          theme: ThemeData(
-            useMaterial3: true,
-            primarySwatch: Colors.green,
-          ),
-          home: const DefaultTabController(
-              length: 2, child: MyHomePage(title: 'Flutter Demo Home Page')),
-        );
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        useMaterial3: true,
+        primarySwatch: Colors.green,
+      ),
+      home: const DefaultTabController(
+          length: 2, child: MyHomePage(title: 'Flutter Demo Home Page')),
+    );
   }
 }
 
@@ -63,8 +75,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 _selectedTabIdx = index;
               });
             },
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
+            indicatorColor: GreenPicker.background.color,
+            labelColor: GreenPicker.background.color,
             tabs: [
               Tab(
                 child: Chip(

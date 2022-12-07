@@ -15,3 +15,10 @@ extension DateTimeInequality on DateTime {
     return this < rhs || this == rhs;
   }
 }
+
+class SimpleTime {
+  int? hour;
+  int? minute;
+
+  SimpleTime(this.hour, this.minute);
+}
