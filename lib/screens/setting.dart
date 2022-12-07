@@ -1,18 +1,224 @@
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-class SettingScreen extends StatefulWidget {
-  const SettingScreen({super.key});
+class SettingDialog extends StatefulWidget {
+  const SettingDialog({Key? key}) : super(key: key);
 
   @override
-  State<SettingScreen> createState() => _SettingScreenState();
+  State<SettingDialog> createState() => _SettingDialogState();
 }
 
-class _SettingScreenState extends State<SettingScreen> {
+class _SettingDialogState extends State<SettingDialog> {
+  Future<UserCredential> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+    //Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+  PlanningTime planningTime = PlanningTime(0, 0);
+  DiaryTime diaryTime = DiaryTime(0, 0);
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Text('hi'),
+    return Dialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 30,
+          ),
+          StreamBuilder(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+              if (!snapshot.hasData) {
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                  ),
+                  onPressed: signInWithGoogle,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        FontAwesomeIcons.google,
+                        color: Colors.green,
+                      ),
+                      Container(
+                        width: 20,
+                      ),
+                      const Text(
+                        "Sign in with Google",
+                        style: TextStyle(fontSize: 20, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "${snapshot.data?.displayName}님 환영합니다.",
+                        style: const TextStyle(fontSize: 25),
+                      ),
+                      TextButton(
+                        onPressed: FirebaseAuth.instance.signOut,
+                        child: const Text(
+                          "logout",
+                          style: TextStyle(fontSize: 20, color: Colors.green),
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+          Container(
+            margin: const EdgeInsets.all(10),
+            child: Row(
+              children: [
+                const Text(
+                  "  Planning Alarm     ",
+                  style: TextStyle(fontSize: 20),
+                ),
+                Expanded(
+                  child: DropdownButtonFormField(
+                    value: planningTime.hour,
+                    items: List.generate(24, (i) {
+                      if (i < 10) {
+                        return DropdownMenuItem(value: i, child: Text('0$i'));
+                      }
+                      return DropdownMenuItem(value: i, child: Text('$i'));
+                    }),
+                    onChanged: (int? value) {
+                      setState(() {
+                        planningTime.hour = value!;
+                      });
+                    },
+                  ),
+                ),
+                const Text(
+                  " : ",
+                  style: TextStyle(fontSize: 35),
+                ),
+                Expanded(
+                  child: DropdownButtonFormField(
+                    value: planningTime.minute,
+                    items: List.generate(60, (i) {
+                      if (i < 10) {
+                        return DropdownMenuItem(value: i, child: Text('0$i'));
+                      }
+                      return DropdownMenuItem(value: i, child: Text('$i'));
+                    }),
+                    onChanged: (int? value) {
+                      setState(() {
+                        planningTime.minute = value!;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(10),
+            child: Row(
+              children: [
+                const Text(
+                  "      Diary Alarm       ",
+                  style: TextStyle(fontSize: 20),
+                ),
+                Expanded(
+                  child: DropdownButtonFormField(
+                    value: planningTime.hour,
+                    items: List.generate(24, (i) {
+                      if (i < 10) {
+                        return DropdownMenuItem(value: i, child: Text('0$i'));
+                      }
+                      return DropdownMenuItem(value: i, child: Text('$i'));
+                    }),
+                    onChanged: (int? value) {
+                      setState(() {
+                        planningTime.hour = value!;
+                      });
+                    },
+                  ),
+                ),
+                const Text(
+                  " : ",
+                  style: TextStyle(fontSize: 35),
+                ),
+                Expanded(
+                  child: DropdownButtonFormField(
+                    value: planningTime.minute,
+                    items: List.generate(60, (i) {
+                      if (i < 10) {
+                        return DropdownMenuItem(value: i, child: Text('0$i'));
+                      }
+                      return DropdownMenuItem(value: i, child: Text('$i'));
+                    }),
+                    onChanged: (int? value) {
+                      setState(() {
+                        planningTime.minute = value!;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
+  }
+}
+
+class PlanningTime {
+  int hour;
+  int minute;
+
+  PlanningTime(
+    this.hour,
+    this.minute,
+  );
+
+  @override
+  String toString() {
+    return '('
+        '$hour : '
+        '$minute)';
+  }
+}
+
+class DiaryTime {
+  int hour;
+  int minute;
+
+  DiaryTime(
+    this.hour,
+    this.minute,
+  );
+
+  @override
+  String toString() {
+    return '('
+        '$hour : '
+        '$minute)';
   }
 }
